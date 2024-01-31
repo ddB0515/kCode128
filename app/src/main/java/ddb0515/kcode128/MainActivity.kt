@@ -1,8 +1,8 @@
-package ie.kcode128
+package ddb0515.kcode128
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import ie.kcode128.databinding.ActivityMainBinding
+import ddb0515.kcode128.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

@@ -6,10 +6,10 @@ plugins {
 
 
 android {
-    namespace 'ie.kcode128'
+    namespace 'ddb0515.kcode128'
     compileSdk 34
     defaultConfig {
-        applicationId "ie.kcode128"
+        applicationId "ddb0515.kcode128"
         minSdkVersion 19
         targetSdkVersion 34
         versionCode 1

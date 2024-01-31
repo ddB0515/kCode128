@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorWhite"
-    tools:context="ie.kcode128.MainActivity">
+    tools:context="ddb0515.kcode128.MainActivity">
 
 
     <FrameLayout
@@ -22,7 +22,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ie.kcode128.kCode128
+        <ddb0515.kcode128.kCode128
             android:id="@+id/barcodeView"
             android:layout_width="250dp"
             android:layout_height="150dp"
