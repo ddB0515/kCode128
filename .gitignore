@@ -57,4 +57,12 @@ freeline.py
 freeline/
 freeline_project_description.json
 
-libs/
+.gradle
+/local.properties
+/.idea/
+/.idea/*
+.DS_Store
+/build
+*/build
+/captures
+.cxx

@@ -2,20 +2,15 @@ package ie.kcode128
 
 import android.content.Context
 import android.graphics.*
-import android.support.v7.widget.AppCompatImageView
 import android.util.AttributeSet
-import android.util.Log
+import androidx.appcompat.widget.AppCompatImageView
 import kotlin.experimental.xor
 
 
-/**
- * Created by InvalidExcepti0n on 22/01/18.
- */
 class kCode128 : AppCompatImageView {
 
     // Whole docs and info you can get here
     // https://en.wikipedia.org/wiki/Code_128
-    private val TAG = kCode128::class.java.simpleName
 
     private val CODE_START = 104
     private val CODE_STOP = 106
@@ -31,14 +26,18 @@ class kCode128 : AppCompatImageView {
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    )
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         setupBarCodeView(w, h)
     }
 
-    private fun setupBarCodeView(w:Int, h:Int) {
+    private fun setupBarCodeView(w: Int, h: Int) {
         resetValues()
         setImageBitmap(getBitmap(w, h))
     }
@@ -73,20 +72,18 @@ class kCode128 : AppCompatImageView {
         }
 
         val len = data!!.length
-        var index = -1
-        var count = 0
         val buffer = initBuffer(len)
         var pos = 0
 
-        count = appendData(CODE_WEIGHT[CODE_START], buffer, pos, "StartCode")
+        var count = appendData(CODE_WEIGHT[CODE_START], buffer, pos)
         pos += count
         weight_sum = CODE_START
         for (i in 0 until len) {
             weight++
-            val ch = data!!.get(i)
-            index = ch - ' '
+            val ch = data!![i]
+            val index = ch - ' '
             val ch_weight = CODE_WEIGHT[index]
-            count = appendData(ch_weight, buffer, pos, ch + "")
+            count = appendData(ch_weight, buffer, pos)
             pos += count
             val weightByValue = weight * index
             weight_sum += weightByValue
@@ -94,17 +91,15 @@ class kCode128 : AppCompatImageView {
 
         check_sum = weight_sum % DIVISOR
 
-        count = appendData(CODE_WEIGHT[check_sum], buffer, pos, "CheckSum")
+        count = appendData(CODE_WEIGHT[check_sum], buffer, pos)
         pos += count
-        count = appendData(CODE_WEIGHT[CODE_STOP], buffer, pos, "CodeStop")
+        count = appendData(CODE_WEIGHT[CODE_STOP], buffer, pos)
         pos += count
 
         return buffer
     }
 
-    private fun getBitmap(width: Int, height: Int): Bitmap {
-        var width = width
-        var height = height
+    private fun getBitmap(w: Int, h: Int): Bitmap {
         val code = encode()
 
         val resources = context.resources
@@ -116,41 +111,47 @@ class kCode128 : AppCompatImageView {
 
         // Add quiet zone on both sides
         val fullWidth = inputWidth + 6
-        val outputWidth = Math.max(width, fullWidth)
-        val outputHeight = Math.max(1, height) - BOTTOM_GAP
+        val outputWidth = Math.max(w, fullWidth)
+        val outputHeight = Math.max(1, h) - BOTTOM_GAP
         val multiple = outputWidth / fullWidth
         val leftPadding = (outputWidth - inputWidth * multiple) / 2
 
         //BitMatrix output = new BitMatrix(outputWidth, outputHeight);
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         // Whole background area Colour
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        bgPaint.setColor(BARCODE_BG_COLOR)
+        bgPaint.color = BARCODE_BG_COLOR
 
-        val bounds = Rect(0, 0, width, height)
+        val bounds = Rect(0, 0, w, h)
         canvas.drawRect(bounds, bgPaint)
 
         val barPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        barPaint.setColor(BARCODE_COLOR)
-        barPaint.setStrokeWidth(0F)
+        barPaint.color = BARCODE_COLOR
+        barPaint.strokeWidth = 0F
 
         var inputX = 0
         var outputX = leftPadding
         while (inputX < inputWidth) {
-            if (code?.get(inputX)?.toInt()  == 1) {
-                canvas.drawRect(outputX.toFloat(), TOP_GAP.toFloat(), (outputX + multiple).toFloat(), outputHeight.toFloat(), barPaint)
+            if (code.get(inputX).toInt() == 1) {
+                canvas.drawRect(
+                    outputX.toFloat(),
+                    TOP_GAP.toFloat(),
+                    (outputX + multiple).toFloat(),
+                    outputHeight.toFloat(),
+                    barPaint
+                )
             }
             inputX++
             outputX += multiple
         }
         // Colour of BarCode
-        bgPaint.setColor(BARCODE_COLOR)
+        bgPaint.color = BARCODE_COLOR
         val size = (18 * scale)
-        bgPaint.setTextSize(size)
+        bgPaint.textSize = size
         val str = insertSpace(data.toString())
-        bgPaint.setTextAlign(Paint.Align.CENTER)
-        canvas.drawText(str, (width / 2).toFloat(), (height - TOP_GAP).toFloat(), bgPaint)
+        bgPaint.textAlign = Paint.Align.CENTER
+        canvas.drawText(str, (w / 2).toFloat(), (h - TOP_GAP).toFloat(), bgPaint)
         return bitmap
     }
 
@@ -170,7 +171,7 @@ class kCode128 : AppCompatImageView {
         return sb.toString()
     }
 
-    private fun appendData(weights: ByteArray, dst: ByteArray, pos: Int, debugdata: String): Int {
+    private fun appendData(weights: ByteArray, dst: ByteArray, pos: Int): Int {
         var color: Byte = 1
         var count = 0
         var index = pos
@@ -188,28 +189,114 @@ class kCode128 : AppCompatImageView {
     }
 
     // Check https://en.wikipedia.org/wiki/Code_128 for more details
-    val CODE_WEIGHT = arrayOf(byteArrayOf(2, 1, 2, 2, 2, 2), // 0
-            byteArrayOf(2, 2, 2, 1, 2, 2), byteArrayOf(2, 2, 2, 2, 2, 1), byteArrayOf(1, 2, 1, 2, 2, 3), byteArrayOf(1, 2, 1, 3, 2, 2), byteArrayOf(1, 3, 1, 2, 2, 2), // 5
-            byteArrayOf(1, 2, 2, 2, 1, 3), byteArrayOf(1, 2, 2, 3, 1, 2), byteArrayOf(1, 3, 2, 2, 1, 2), byteArrayOf(2, 2, 1, 2, 1, 3), byteArrayOf(2, 2, 1, 3, 1, 2), // 10
-            byteArrayOf(2, 3, 1, 2, 1, 2), byteArrayOf(1, 1, 2, 2, 3, 2), byteArrayOf(1, 2, 2, 1, 3, 2), byteArrayOf(1, 2, 2, 2, 3, 1), byteArrayOf(1, 1, 3, 2, 2, 2), // 15
-            byteArrayOf(1, 2, 3, 1, 2, 2), byteArrayOf(1, 2, 3, 2, 2, 1), byteArrayOf(2, 2, 3, 2, 1, 1), byteArrayOf(2, 2, 1, 1, 3, 2), byteArrayOf(2, 2, 1, 2, 3, 1), // 20
-            byteArrayOf(2, 1, 3, 2, 1, 2), byteArrayOf(2, 2, 3, 1, 1, 2), byteArrayOf(3, 1, 2, 1, 3, 1), byteArrayOf(3, 1, 1, 2, 2, 2), byteArrayOf(3, 2, 1, 1, 2, 2), // 25
-            byteArrayOf(3, 2, 1, 2, 2, 1), byteArrayOf(3, 1, 2, 2, 1, 2), byteArrayOf(3, 2, 2, 1, 1, 2), byteArrayOf(3, 2, 2, 2, 1, 1), byteArrayOf(2, 1, 2, 1, 2, 3), // 30
-            byteArrayOf(2, 1, 2, 3, 2, 1), byteArrayOf(2, 3, 2, 1, 2, 1), byteArrayOf(1, 1, 1, 3, 2, 3), byteArrayOf(1, 3, 1, 1, 2, 3), byteArrayOf(1, 3, 1, 3, 2, 1), // 35
-            byteArrayOf(1, 1, 2, 3, 1, 3), byteArrayOf(1, 3, 2, 1, 1, 3), byteArrayOf(1, 3, 2, 3, 1, 1), byteArrayOf(2, 1, 1, 3, 1, 3), byteArrayOf(2, 3, 1, 1, 1, 3), // 40
-            byteArrayOf(2, 3, 1, 3, 1, 1), byteArrayOf(1, 1, 2, 1, 3, 3), byteArrayOf(1, 1, 2, 3, 3, 1), byteArrayOf(1, 3, 2, 1, 3, 1), byteArrayOf(1, 1, 3, 1, 2, 3), // 45
-            byteArrayOf(1, 1, 3, 3, 2, 1), byteArrayOf(1, 3, 3, 1, 2, 1), byteArrayOf(3, 1, 3, 1, 2, 1), byteArrayOf(2, 1, 1, 3, 3, 1), byteArrayOf(2, 3, 1, 1, 3, 1), // 50
-            byteArrayOf(2, 1, 3, 1, 1, 3), byteArrayOf(2, 1, 3, 3, 1, 1), byteArrayOf(2, 1, 3, 1, 3, 1), byteArrayOf(3, 1, 1, 1, 2, 3), byteArrayOf(3, 1, 1, 3, 2, 1), // 55
-            byteArrayOf(3, 3, 1, 1, 2, 1), byteArrayOf(3, 1, 2, 1, 1, 3), byteArrayOf(3, 1, 2, 3, 1, 1), byteArrayOf(3, 3, 2, 1, 1, 1), byteArrayOf(3, 1, 4, 1, 1, 1), // 60
-            byteArrayOf(2, 2, 1, 4, 1, 1), byteArrayOf(4, 3, 1, 1, 1, 1), byteArrayOf(1, 1, 1, 2, 2, 4), byteArrayOf(1, 1, 1, 4, 2, 2), byteArrayOf(1, 2, 1, 1, 2, 4), // 65
-            byteArrayOf(1, 2, 1, 4, 2, 1), byteArrayOf(1, 4, 1, 1, 2, 2), byteArrayOf(1, 4, 1, 2, 2, 1), byteArrayOf(1, 1, 2, 2, 1, 4), byteArrayOf(1, 1, 2, 4, 1, 2), // 70
-            byteArrayOf(1, 2, 2, 1, 1, 4), byteArrayOf(1, 2, 2, 4, 1, 1), byteArrayOf(1, 4, 2, 1, 1, 2), byteArrayOf(1, 4, 2, 2, 1, 1), byteArrayOf(2, 4, 1, 2, 1, 1), // 75
-            byteArrayOf(2, 2, 1, 1, 1, 4), byteArrayOf(4, 1, 3, 1, 1, 1), byteArrayOf(2, 4, 1, 1, 1, 2), byteArrayOf(1, 3, 4, 1, 1, 1), byteArrayOf(1, 1, 1, 2, 4, 2), // 80
-            byteArrayOf(1, 2, 1, 1, 4, 2), byteArrayOf(1, 2, 1, 2, 4, 1), byteArrayOf(1, 1, 4, 2, 1, 2), byteArrayOf(1, 2, 4, 1, 1, 2), byteArrayOf(1, 2, 4, 2, 1, 1), // 85
-            byteArrayOf(4, 1, 1, 2, 1, 2), byteArrayOf(4, 2, 1, 1, 1, 2), byteArrayOf(4, 2, 1, 2, 1, 1), byteArrayOf(2, 1, 2, 1, 4, 1), byteArrayOf(2, 1, 4, 1, 2, 1), // 90
-            byteArrayOf(4, 1, 2, 1, 2, 1), byteArrayOf(1, 1, 1, 1, 4, 3), byteArrayOf(1, 1, 1, 3, 4, 1), byteArrayOf(1, 3, 1, 1, 4, 1), byteArrayOf(1, 1, 4, 1, 1, 3), // 95
-            byteArrayOf(1, 1, 4, 3, 1, 1), byteArrayOf(4, 1, 1, 1, 1, 3), byteArrayOf(4, 1, 1, 3, 1, 1), byteArrayOf(1, 1, 3, 1, 4, 1), byteArrayOf(1, 1, 4, 1, 3, 1), // 100
-            byteArrayOf(3, 1, 1, 1, 4, 1), byteArrayOf(4, 1, 1, 1, 3, 1), byteArrayOf(2, 1, 1, 4, 1, 2), byteArrayOf(2, 1, 1, 2, 1, 4), byteArrayOf(2, 1, 1, 2, 3, 2), // 105
-            byteArrayOf(2, 3, 3, 1, 1, 1, 2))
+    private val CODE_WEIGHT = arrayOf(
+        byteArrayOf(2, 1, 2, 2, 2, 2), // 0
+        byteArrayOf(2, 2, 2, 1, 2, 2),
+        byteArrayOf(2, 2, 2, 2, 2, 1),
+        byteArrayOf(1, 2, 1, 2, 2, 3),
+        byteArrayOf(1, 2, 1, 3, 2, 2),
+        byteArrayOf(1, 3, 1, 2, 2, 2), // 5
+        byteArrayOf(1, 2, 2, 2, 1, 3),
+        byteArrayOf(1, 2, 2, 3, 1, 2),
+        byteArrayOf(1, 3, 2, 2, 1, 2),
+        byteArrayOf(2, 2, 1, 2, 1, 3),
+        byteArrayOf(2, 2, 1, 3, 1, 2), // 10
+        byteArrayOf(2, 3, 1, 2, 1, 2),
+        byteArrayOf(1, 1, 2, 2, 3, 2),
+        byteArrayOf(1, 2, 2, 1, 3, 2),
+        byteArrayOf(1, 2, 2, 2, 3, 1),
+        byteArrayOf(1, 1, 3, 2, 2, 2), // 15
+        byteArrayOf(1, 2, 3, 1, 2, 2),
+        byteArrayOf(1, 2, 3, 2, 2, 1),
+        byteArrayOf(2, 2, 3, 2, 1, 1),
+        byteArrayOf(2, 2, 1, 1, 3, 2),
+        byteArrayOf(2, 2, 1, 2, 3, 1), // 20
+        byteArrayOf(2, 1, 3, 2, 1, 2),
+        byteArrayOf(2, 2, 3, 1, 1, 2),
+        byteArrayOf(3, 1, 2, 1, 3, 1),
+        byteArrayOf(3, 1, 1, 2, 2, 2),
+        byteArrayOf(3, 2, 1, 1, 2, 2), // 25
+        byteArrayOf(3, 2, 1, 2, 2, 1),
+        byteArrayOf(3, 1, 2, 2, 1, 2),
+        byteArrayOf(3, 2, 2, 1, 1, 2),
+        byteArrayOf(3, 2, 2, 2, 1, 1),
+        byteArrayOf(2, 1, 2, 1, 2, 3), // 30
+        byteArrayOf(2, 1, 2, 3, 2, 1),
+        byteArrayOf(2, 3, 2, 1, 2, 1),
+        byteArrayOf(1, 1, 1, 3, 2, 3),
+        byteArrayOf(1, 3, 1, 1, 2, 3),
+        byteArrayOf(1, 3, 1, 3, 2, 1), // 35
+        byteArrayOf(1, 1, 2, 3, 1, 3),
+        byteArrayOf(1, 3, 2, 1, 1, 3),
+        byteArrayOf(1, 3, 2, 3, 1, 1),
+        byteArrayOf(2, 1, 1, 3, 1, 3),
+        byteArrayOf(2, 3, 1, 1, 1, 3), // 40
+        byteArrayOf(2, 3, 1, 3, 1, 1),
+        byteArrayOf(1, 1, 2, 1, 3, 3),
+        byteArrayOf(1, 1, 2, 3, 3, 1),
+        byteArrayOf(1, 3, 2, 1, 3, 1),
+        byteArrayOf(1, 1, 3, 1, 2, 3), // 45
+        byteArrayOf(1, 1, 3, 3, 2, 1),
+        byteArrayOf(1, 3, 3, 1, 2, 1),
+        byteArrayOf(3, 1, 3, 1, 2, 1),
+        byteArrayOf(2, 1, 1, 3, 3, 1),
+        byteArrayOf(2, 3, 1, 1, 3, 1), // 50
+        byteArrayOf(2, 1, 3, 1, 1, 3),
+        byteArrayOf(2, 1, 3, 3, 1, 1),
+        byteArrayOf(2, 1, 3, 1, 3, 1),
+        byteArrayOf(3, 1, 1, 1, 2, 3),
+        byteArrayOf(3, 1, 1, 3, 2, 1), // 55
+        byteArrayOf(3, 3, 1, 1, 2, 1),
+        byteArrayOf(3, 1, 2, 1, 1, 3),
+        byteArrayOf(3, 1, 2, 3, 1, 1),
+        byteArrayOf(3, 3, 2, 1, 1, 1),
+        byteArrayOf(3, 1, 4, 1, 1, 1), // 60
+        byteArrayOf(2, 2, 1, 4, 1, 1),
+        byteArrayOf(4, 3, 1, 1, 1, 1),
+        byteArrayOf(1, 1, 1, 2, 2, 4),
+        byteArrayOf(1, 1, 1, 4, 2, 2),
+        byteArrayOf(1, 2, 1, 1, 2, 4), // 65
+        byteArrayOf(1, 2, 1, 4, 2, 1),
+        byteArrayOf(1, 4, 1, 1, 2, 2),
+        byteArrayOf(1, 4, 1, 2, 2, 1),
+        byteArrayOf(1, 1, 2, 2, 1, 4),
+        byteArrayOf(1, 1, 2, 4, 1, 2), // 70
+        byteArrayOf(1, 2, 2, 1, 1, 4),
+        byteArrayOf(1, 2, 2, 4, 1, 1),
+        byteArrayOf(1, 4, 2, 1, 1, 2),
+        byteArrayOf(1, 4, 2, 2, 1, 1),
+        byteArrayOf(2, 4, 1, 2, 1, 1), // 75
+        byteArrayOf(2, 2, 1, 1, 1, 4),
+        byteArrayOf(4, 1, 3, 1, 1, 1),
+        byteArrayOf(2, 4, 1, 1, 1, 2),
+        byteArrayOf(1, 3, 4, 1, 1, 1),
+        byteArrayOf(1, 1, 1, 2, 4, 2), // 80
+        byteArrayOf(1, 2, 1, 1, 4, 2),
+        byteArrayOf(1, 2, 1, 2, 4, 1),
+        byteArrayOf(1, 1, 4, 2, 1, 2),
+        byteArrayOf(1, 2, 4, 1, 1, 2),
+        byteArrayOf(1, 2, 4, 2, 1, 1), // 85
+        byteArrayOf(4, 1, 1, 2, 1, 2),
+        byteArrayOf(4, 2, 1, 1, 1, 2),
+        byteArrayOf(4, 2, 1, 2, 1, 1),
+        byteArrayOf(2, 1, 2, 1, 4, 1),
+        byteArrayOf(2, 1, 4, 1, 2, 1), // 90
+        byteArrayOf(4, 1, 2, 1, 2, 1),
+        byteArrayOf(1, 1, 1, 1, 4, 3),
+        byteArrayOf(1, 1, 1, 3, 4, 1),
+        byteArrayOf(1, 3, 1, 1, 4, 1),
+        byteArrayOf(1, 1, 4, 1, 1, 3), // 95
+        byteArrayOf(1, 1, 4, 3, 1, 1),
+        byteArrayOf(4, 1, 1, 1, 1, 3),
+        byteArrayOf(4, 1, 1, 3, 1, 1),
+        byteArrayOf(1, 1, 3, 1, 4, 1),
+        byteArrayOf(1, 1, 4, 1, 3, 1), // 100
+        byteArrayOf(3, 1, 1, 1, 4, 1),
+        byteArrayOf(4, 1, 1, 1, 3, 1),
+        byteArrayOf(2, 1, 1, 4, 1, 2),
+        byteArrayOf(2, 1, 1, 2, 1, 4),
+        byteArrayOf(2, 1, 1, 2, 3, 2), // 105
+        byteArrayOf(2, 3, 3, 1, 1, 1, 2)
+    )
 }
 

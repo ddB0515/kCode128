@@ -1,16 +1,17 @@
 package ie.kcode128
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import kotlinx.android.synthetic.main.activity_main.*
+import androidx.appcompat.app.AppCompatActivity
+import ie.kcode128.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        barcodeView.setData("1234567890ABCDEF")
-
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.barcodeView.setData("1234567890ABCDEF")
     }
 }
