@@ -1,6 +1,7 @@
 # kCode128
 Kotlin implementation of Code128 barcode to be used as ImageView + simple demo application
 
+<a href='https://play.google.com/store/apps/details?id=ddb0515.kcode128&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img width="300" height="100" alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
 
 ## Screenshot
 
