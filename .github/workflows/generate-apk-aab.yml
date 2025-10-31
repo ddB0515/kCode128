@@ -60,15 +60,14 @@ jobs:
       - name: Build app bundle release (AAB)
         run: ./gradlew ${{ env.main_project_module }}:bundleRelease
 
-      - name: Upload .aab to Internal Track
-        id: upload_internal
-        uses: KevinRohn/github-action-upload-play-store@v1.0.1
+      - uses: r0adkll/upload-google-play@v1
         with:
-          service_account_json: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          package_name: "ddb0515.kcode128"
-          aab_file_path: ${{ env.main_project_module }}/build/outputs/bundle/release/app-release.aab"
-          track: "internal"
-          release_status: "draft"
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: ddb0515.kcode128
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          track: production
+          status: inProgress
+          mappingFile: app/build/outputs/mapping/release/mapping.txt
 
       # Upload Artifact Build
       # Noted For Output [main_project_module]/build/outputs/apk/debug/
