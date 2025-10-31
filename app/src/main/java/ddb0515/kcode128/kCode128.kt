@@ -5,6 +5,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
 import kotlin.experimental.xor
+import androidx.core.graphics.createBitmap
 
 
 class kCode128 : AppCompatImageView {
@@ -111,13 +112,13 @@ class kCode128 : AppCompatImageView {
 
         // Add quiet zone on both sides
         val fullWidth = inputWidth + 6
-        val outputWidth = Math.max(w, fullWidth)
-        val outputHeight = Math.max(1, h) - BOTTOM_GAP
+        val outputWidth = w.coerceAtLeast(fullWidth)
+        val outputHeight = 1.coerceAtLeast(h) - BOTTOM_GAP
         val multiple = outputWidth / fullWidth
         val leftPadding = (outputWidth - inputWidth * multiple) / 2
 
         //BitMatrix output = new BitMatrix(outputWidth, outputHeight);
-        val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(w, h)
         val canvas = Canvas(bitmap)
         // Whole background area Colour
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -133,7 +134,7 @@ class kCode128 : AppCompatImageView {
         var inputX = 0
         var outputX = leftPadding
         while (inputX < inputWidth) {
-            if (code.get(inputX).toInt() == 1) {
+            if (code[inputX].toInt() == 1) {
                 canvas.drawRect(
                     outputX.toFloat(),
                     TOP_GAP.toFloat(),
