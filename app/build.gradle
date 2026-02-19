@@ -12,8 +12,8 @@ android {
         applicationId "ddb0515.kcode128"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 4
-        versionName "1.0.4"
+        versionCode 5
+        versionName "1.0.5"
         testInstrumentationRunner "androidx.test.ext.junit.runners.AndroidJUnit4"
     }
     buildTypes {
